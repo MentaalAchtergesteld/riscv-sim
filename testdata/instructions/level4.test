@@ -1,0 +1,17 @@
+-X testdata/level4-instrs.txt
+0x00001197	op=23 U-type rd=3 imm=0x1000
+0x00010197	op=23 U-type rd=3 imm=0x10000
+0x00400f17	op=23 U-type rd=30 imm=0x400000
+0x0a4000ef	op=111 J-type rd=1 imm=0xa4
+0x7f10006f	op=111 J-type rd=0 imm=0xff0
+0xfedf10ef	op=111 J-type rd=1 imm=0x1f1fec
+0x00008067	op=103 I-type func=0 rd=0 rs1=1 imm=0x0
+0x00071c63	op=99 B-type rs1=14 rs2=0 imm=0x18 func=1
+0x00051463	op=99 B-type rs1=10 rs2=0 imm=0x8 func=1
+0xfc0f1ee3	op=99 B-type rs1=30 rs2=0 imm=0x1fdc func=1
+0x0007c703	op=3 I-type func=4 rd=14 rs1=15 imm=0x0
+0x40004f03	op=3 I-type func=4 rd=30 rs1=0 imm=0x400
+0xff0a4683	op=3 I-type func=4 rd=13 rs1=20 imm=0xff0
+0x26a027a3	op=35 S-type rs1=0 rs2=10 imm=0x26f func=2
+0x400f2023	op=35 S-type rs1=30 rs2=0 imm=0x400 func=2
+0x81edaa23	op=35 S-type rs1=27 rs2=30 imm=0x814 func=2

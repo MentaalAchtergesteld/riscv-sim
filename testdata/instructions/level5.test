@@ -1,0 +1,18 @@
+-X testdata/level5-instrs.txt
+0x00113423	op=35 S-type rs1=2 rs2=1 imm=0x8 func=3
+0x04013823	op=35 S-type rs1=2 rs2=0 imm=0x50 func=3
+0xfbf03823	op=35 S-type rs1=0 rs2=31 imm=0xfb0 func=3
+0x7f0a3fa3	op=35 S-type rs1=20 rs2=16 imm=0x7ff func=3
+0x00812083	op=3 I-type func=2 rd=1 rs1=2 imm=0x8
+0x05012a03	op=3 I-type func=2 rd=20 rs1=2 imm=0x50
+0xfb002f83	op=3 I-type func=2 rd=31 rs1=0 imm=0xfb0
+0x7ffa2803	op=3 I-type func=2 rd=16 rs1=20 imm=0x7ff
+0x02b51263	op=99 B-type rs1=10 rs2=11 imm=0x24 func=1
+0xfea516e3	op=99 B-type rs1=10 rs2=10 imm=0x1fec func=1
+0xfdf51ce3	op=99 B-type rs1=10 rs2=31 imm=0x1fd8 func=1
+0x00a5d663	op=99 B-type rs1=11 rs2=10 imm=0xc func=5
+0xfdef58e3	op=99 B-type rs1=30 rs2=30 imm=0x1fd0 func=5
+0x009dd663	op=99 B-type rs1=27 rs2=9 imm=0xc func=5
+0x40f5053b	op=59 R-type func=256 rd=10 rs1=10 rs2=15
+0x4050003b	op=59 R-type func=256 rd=0 rs1=0 rs2=5
+0x41ff8fbb	op=59 R-type func=256 rd=31 rs1=31 rs2=31

@@ -1,0 +1,15 @@
+-X testdata/level1-instrs.txt
+0x02600093	op=19 I-type func=0 rd=1 rs1=0 imm=0x26
+0x40000493	op=19 I-type func=0 rd=9 rs1=0 imm=0x400
+0x06300a93	op=19 I-type func=0 rd=21 rs1=0 imm=0x63
+0x00408113	op=19 I-type func=0 rd=2 rs1=1 imm=0x4
+0xf0b48193	op=19 I-type func=0 rd=3 rs1=9 imm=0xf0b
+0x07ba8213	op=19 I-type func=0 rd=4 rs1=21 imm=0x7b
+0xffb28f13	op=19 I-type func=0 rd=30 rs1=5 imm=0xffb
+0x40110233	op=51 R-type func=256 rd=4 rs1=2 rs2=1
+0x403100b3	op=51 R-type func=256 rd=1 rs1=2 rs2=3
+0x41ce8f33	op=51 R-type func=256 rd=30 rs1=29 rs2=28
+0x004082b3	op=51 R-type func=0 rd=5 rs1=1 rs2=4
+0x000800b3	op=51 R-type func=0 rd=1 rs1=16 rs2=0
+0x01ce8f33	op=51 R-type func=0 rd=30 rs1=29 rs2=28
+0x00000013	op=19 I-type func=0 rd=0 rs1=0 imm=0x0

@@ -1,0 +1,13 @@
+-X testdata/level3-instrs.txt
+0x0016869b	op=27 I-type func=0 rd=13 rs1=13 imm=0x1
+0x4d20009b	op=27 I-type func=0 rd=1 rs1=0 imm=0x4d2
+0xf15e0f1b	op=27 I-type func=0 rd=30 rs1=28 imm=0xf15
+0x7fff821b	op=27 I-type func=0 rd=4 rs1=31 imm=0x7ff
+0x0020c863	op=99 SB-type rs1=1 rs2=2 imm=0x10
+0x00d6c863	op=99 SB-type rs1=13 rs2=13 imm=0x10
+0xffe0c4e3	op=99 SB-type rs1=1 rs2=30 imm=0x1fe8
+0xffc0c6e3	op=99 SB-type rs1=1 rs2=28 imm=0x1fec
+0x00d6d263	op=99 SB-type rs1=13 rs2=13 imm=0x4
+0xfed6dee3	op=99 SB-type rs1=13 rs2=13 imm=0x1ffc
+0x004f5063	op=99 SB-type rs1=30 rs2=4 imm=0x0
+0xfcc25ae3	op=99 SB-type rs1=4 rs2=12 imm=0x1fd4
