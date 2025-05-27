@@ -156,6 +156,8 @@ fn read_expected_instructions(test: &str) -> Result<Vec<DecodedInstr>, io::Error
                         rs1: *data.get("rs1").unwrap_or(&0) as u8,
                         rs2: *data.get("rs2").unwrap_or(&0) as u8,
                         func: *data.get("func").unwrap_or(&0) as u16,
+                        func3: (*data.get("func").unwrap_or(&0) & 0x7) as u8,
+                        func7: (*data.get("func").unwrap_or(&0) >> 3) as u8,
                     }))
                 },
                 "I-type" => {

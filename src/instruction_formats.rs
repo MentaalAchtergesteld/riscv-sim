@@ -4,8 +4,10 @@ use crate::util::extract_bits;
 pub struct RType {
     pub opcode: u8,
     pub rd: u8,
+    pub func3: u8,
     pub rs1: u8,
     pub rs2: u8,
+    pub func7: u8,
     pub func: u16,
 }
 
@@ -13,19 +15,21 @@ impl From<u32> for RType {
     fn from(value: u32) -> Self {
         let opcode = extract_bits(value, 6, 0)    as u8;
         let rd = extract_bits(value, 11, 7)       as u8;
-        let funct3 = extract_bits(value, 14, 12) as u16;
+        let func3 = extract_bits(value, 14, 12)   as u8;
         let rs1 = extract_bits(value, 19, 15)     as u8;
         let rs2 = extract_bits(value, 24, 20)     as u8;
-        let funct7 = extract_bits(value, 31, 25) as u16;
+        let func7 = extract_bits(value, 31, 25)   as u8;
 
-        let func = (funct7 << 3) | funct3;
+        let func = ((func7 as u16) << 3) | (func3 as u16);
 
         Self {
             opcode,
             rd,
             rs1,
             rs2,
-            func
+            func,
+            func3,
+            func7
         }
     }
 }
