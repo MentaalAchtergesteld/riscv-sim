@@ -18,6 +18,8 @@ pub enum DecodedInstr {
 pub enum DecodeError {
     #[error("Unknown opcode: {0:8x}")]
     UnknownOpcode(u8),
+    #[error("End of program")]
+    EndOfProgram,
 }
 
 pub fn decode_instruction(instruction: u32) -> Result<DecodedInstr, DecodeError> {
@@ -37,6 +39,7 @@ pub fn decode_instruction(instruction: u32) -> Result<DecodedInstr, DecodeError>
         0b0011011 => Ok(DecodedInstr::I(IType::from(instruction))),
         0b0111011 => Ok(DecodedInstr::R(RType::from(instruction))),
         0b0001111 => Ok(DecodedInstr::I(IType::from(instruction))),
+        0b1111111 => Err(DecodeError::EndOfProgram),
         _ => Err(DecodeError::UnknownOpcode(opcode))
     }
 }
