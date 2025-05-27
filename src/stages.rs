@@ -304,7 +304,6 @@ pub fn execute_s(s: &SType, rs1_val: i32, rs2_val: i32) -> Option<ExecuteResult>
     match s.opcode {
         0b0100011 => match s.func {
             0x0 => { // SB Store byte
-                println!("rs1: {}", rs1_val);
                 Some(ExecuteResult::default()
                     .with_write_mem(WriteMem { address: rs1_val.wrapping_add(s.imm) as u64, data: (rs2_val & 0xFF) as u64, size: MemSize::Byte })
                 )

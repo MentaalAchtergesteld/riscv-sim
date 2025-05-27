@@ -8,17 +8,16 @@ mod components;
 mod stages;
 
 fn main() {
-    let mut cpu = CPU::new(1024*128, 1024*128);
+    let mut cpu = CPU::new(1024*128);
 
     let bin = std::fs::read("testdata/programs/msg.bin").unwrap();
     cpu.load_elf(&bin).unwrap();
 
-    // println!("{}", cpu.instr_mem);
 
+    println!("\n--- Cycle Output ---");
     let mut msg = vec![];
 
     for _ in 0..1000 {
-        println!("reg 13: {}", cpu.regs[13]);
         let result =  cpu.cycle();
 
         if let Err(err) = result {
@@ -33,21 +32,17 @@ fn main() {
 
         if let Some((addr, val)) = cpu.last_store {
             if addr == 0x200 {
-                println!("val: {}", val);
-                println!("char: {}", val as u8 as char);
                 msg.push(val as u8 as char);
             }
         }
     }
 
-    println!("69632: {}", cpu.data_mem.read_word(69632).unwrap());
-    println!("69936: {}", cpu.data_mem.read_word(69936).unwrap());
-
-    println!("---");
-    println!("REGISTERS:");
+    
+    println!("\n--- Registers ---");
     for (reg, data) in cpu.regs.iter().enumerate() {
-        println!("0x{:08x}: {}", reg, *data as i32);
+        println!("0x{:08x} = 0x{:08x}", reg, *data as i32);
     }
 
+    println!("\n--- Serial Output ---");
     println!("{}", msg.iter().collect::<String>())
 }

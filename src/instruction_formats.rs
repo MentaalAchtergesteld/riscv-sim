@@ -153,10 +153,6 @@ impl From<u32> for UType {
 
         let imm = (imm_raw << 12) as i32;
 
-        println!("U type instruction: 0b{:032b}", value);
-        println!("U type imm_raw: 0x{:08x}", imm_raw);
-        println!("U type imm: 0x{:08x}", imm);
-
         Self {
             opcode,
             rd,

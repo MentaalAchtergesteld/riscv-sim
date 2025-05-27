@@ -147,19 +147,17 @@ pub enum CPUError {
 
 pub struct CPU {
     pub pc: ProgramCounter,
-    pub instr_mem: Memory,
-    pub data_mem: Memory,
+    pub mem: Memory,
     pub regs: [u64; 32],
 
     pub last_store: Option<(u64, u64)>,
 }
 
 impl CPU {
-    pub fn new(instr_mem_size: usize, data_mem_size: usize) -> Self {
+    pub fn new(mem_size: usize) -> Self {
         CPU {
             pc: ProgramCounter::default(),
-            instr_mem: Memory::new(instr_mem_size),
-            data_mem: Memory::new(data_mem_size),
+            mem: Memory::new(mem_size),
             regs: [0; 32],
             last_store: None,
         }
@@ -167,14 +165,14 @@ impl CPU {
 
     pub fn cycle(&mut self) -> Result<(), CPUError> {
         self.last_store = None;
-        let instruction = fetch_instruction(&self.pc, &self.instr_mem)
+        let instruction = fetch_instruction(&self.pc, &self.mem)
             .map_err(|e| CPUError::FetchError { source: e, pc: self.pc.address })?;
         let decoded_instruction = decode_instruction(instruction as u32)
             .map_err(|e| CPUError::DecodeError { source: e, pc: self.pc.address })?;
 
-        println!("PC: {:08x}", self.pc.address);
+        // println!("PC: {:08x}", self.pc.address);
         // println!("instr: {:032b}", instruction);
-        println!("decoded instr: {:?}", decoded_instruction);
+        // println!("decoded instr: {:?}", decoded_instruction);
 
         let rs1_val = match &decoded_instruction {
             DecodedInstr::R(r) => self.regs[r.rs1 as usize],
@@ -198,17 +196,12 @@ impl CPU {
             .map_err(|e| CPUError::ExecuteError { source: e, pc: self.pc.address })?;
 
         if let Some(read_mem) = execute_result.read_mem {
-            println!("{:?}", read_mem);
             let data = match read_mem.size {
-                MemSize::Byte => self.data_mem.read_byte(read_mem.address as usize, read_mem.signed),
-                MemSize::Half => self.data_mem.read_half_word(read_mem.address as usize, read_mem.signed),
-                MemSize::Word => self.data_mem.read_word(read_mem.address as usize),
-                MemSize::Double => self.data_mem.read_double_word(read_mem.address as usize),
+                MemSize::Byte => self.mem.read_byte(read_mem.address as usize, read_mem.signed),
+                MemSize::Half => self.mem.read_half_word(read_mem.address as usize, read_mem.signed),
+                MemSize::Word => self.mem.read_word(read_mem.address as usize),
+                MemSize::Double => self.mem.read_double_word(read_mem.address as usize),
             }.map_err(|e| CPUError::MemoryError { source: e, pc: self.pc.address })?;
-
-            if read_mem.size == MemSize::Double {
-                println!("Value: {}", data)
-            }
 
             if read_mem.rd != 0 {
                 self.regs[read_mem.rd as usize] = data;
@@ -217,10 +210,10 @@ impl CPU {
 
         if let Some(write_mem) = execute_result.write_mem {
             match write_mem.size {
-                MemSize::Byte => self.data_mem.write_byte(write_mem.address as usize, write_mem.data),
-                MemSize::Half => self.data_mem.write_half_word(write_mem.address as usize, write_mem.data),
-                MemSize::Word => self.data_mem.write_word(write_mem.address as usize, write_mem.data),
-                MemSize::Double => self.data_mem.write_double_word(write_mem.address as usize, write_mem.data),
+                MemSize::Byte => self.mem.write_byte(write_mem.address as usize, write_mem.data),
+                MemSize::Half => self.mem.write_half_word(write_mem.address as usize, write_mem.data),
+                MemSize::Word => self.mem.write_word(write_mem.address as usize, write_mem.data),
+                MemSize::Double => self.mem.write_double_word(write_mem.address as usize, write_mem.data),
             }.map_err(|e| CPUError::MemoryError { source: e, pc: self.pc.address })?;
 
             self.last_store = Some((write_mem.address, write_mem.data));
@@ -242,8 +235,9 @@ impl CPU {
     }
 }
 
+// Beautiful code written by Chat, because i couldn't be bothered to write this shit myself.
+
 use goblin::elf::{program_header::PT_LOAD, sym::STT_OBJECT, Elf};
-use std::convert::TryInto;
 
 impl CPU {
     pub fn load_elf(&mut self, elf_bytes: &[u8]) -> Result<(), CPUError> {
@@ -268,21 +262,21 @@ impl CPU {
             let file_size = ph.p_filesz as usize;
             let mem_size  = ph.p_memsz as usize;
             // let mem_off = (vaddr - base) as usize;
-            let mem_off = base as usize;
-
-            println!("vaddr: {}", vaddr);
+            let mem_off = vaddr as usize;
 
             // Zorg dat we binnen geheugenruimte blijven
-            if mem_off + mem_size > self.instr_mem.data.len() {
+            if mem_off + mem_size > self.mem.data.len() {
                 return Err(CPUError::ElfTooLittleMemoryError);
             }
 
             // Kopieer initieel bestand
-            self.instr_mem.data[mem_off .. mem_off + file_size]
+            self.mem.data[mem_off .. mem_off + file_size]
                 .copy_from_slice(&elf_bytes[offset .. offset + file_size]);
 
+            // println!("{:?}", &self.mem.data[mem_off .. mem_off + file_size]);
+
             // Zero-fill voor resterende bytes (bijv. BSS)
-            for b in &mut self.instr_mem.data[mem_off + file_size .. mem_off + mem_size] {
+            for b in &mut self.mem.data[mem_off + file_size .. mem_off + mem_size] {
                 *b = 0;
             }
 
@@ -324,14 +318,15 @@ impl CPU {
             }
 
             let addr = sym.st_value as usize;
-            let offset = (addr - base as usize) as usize;
+            // let offset = (addr - base as usize) as usize;
+            let offset = addr as usize as usize;
 
-            if offset + 4 <= self.instr_mem.data.len() {
-                let raw = &self.instr_mem.data[offset..offset + 4];
+            if offset + 4 <= self.mem.data.len() {
+                let raw = &self.mem.data[offset..offset + 4];
                 let value = u32::from_le_bytes(raw.try_into().unwrap());
-                println!("{:<20} @0x{:08x} ⇒ 0x{:08x}", name, addr, value);
+                println!("{:<20} @0x{:08x}, {} ⇒ 0x{:08x}", name, addr, addr, value);
             } else {
-                println!("{:<20} @0x{:08x} ⇒ (out of memory range)", name, addr);
+                println!("{:<20} @0x{:08x}, {} ⇒ (out of memory range)", name, addr, addr);
             }
         }
 
