@@ -30,25 +30,37 @@ impl Memory {
         }
     }
 
-    pub fn read_byte(&self, addr: usize) -> Result<u8, MemoryError> {
+    pub fn read_byte(&self, addr: usize, signed: bool) -> Result<u32, MemoryError> {
         if addr >= self.data.len() { return Err(MemoryError::OutOfBounds) }
-        Ok(self.data[addr])
+        let byte = self.data[addr];
+
+        if signed {
+            Ok((byte as i8) as i32 as u32)
+        } else {
+            Ok(byte as u32)
+        }
     }
 
-    pub fn read_half_word(&self, addr: usize) -> Result<u16, MemoryError> {
-        if addr+2 >= self.data.len() { return Err(MemoryError::OutOfBounds) }
+    pub fn read_half_word(&self, addr: usize, signed: bool) -> Result<u32, MemoryError> {
+        if addr+1 >= self.data.len() { return Err(MemoryError::OutOfBounds) }
         let bytes = &self.data[addr..addr+2];
-        Ok(u16::from_le_bytes([bytes[0], bytes[1]]))
+        let half = u16::from_le_bytes([bytes[0], bytes[1]]);
+
+        if signed {
+            Ok((half as i16) as i32 as u32)
+        } else {
+            Ok(half as u32)
+        }
     }
 
     pub fn read_word(&self, addr: usize) -> Result<u32, MemoryError> {
-        if addr+4 >= self.data.len() { return Err(MemoryError::OutOfBounds) }
+        if addr+3 >= self.data.len() { return Err(MemoryError::OutOfBounds) }
         let bytes = &self.data[addr..addr+4];
         Ok(u32::from_le_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]))
     }
 
     pub fn read_double_word(&self, addr: usize) -> Result<u64, MemoryError> {
-        if addr+8 >= self.data.len() { return Err(MemoryError::OutOfBounds) }
+        if addr+7 >= self.data.len() { return Err(MemoryError::OutOfBounds) }
         let bytes = &self.data[addr..addr+8];
         Ok(u64::from_le_bytes([
             bytes[0], bytes[1], bytes[2], bytes[3],
@@ -56,28 +68,28 @@ impl Memory {
         ]))
     }
 
-    pub fn write_byte(&mut self, addr: usize, val: u8) -> Result<(), MemoryError> {
+    pub fn write_byte(&mut self, addr: usize, val: u32) -> Result<(), MemoryError> {
         if addr >= self.data.len() { return Err(MemoryError::OutOfBounds) }
-        self.data[addr] = val;
+        self.data[addr] = val as u8;
         Ok(())
     }
 
-    pub fn write_half_word(&mut self, addr: usize, val: u16) -> Result<(), MemoryError> {
-        if addr+2 >= self.data.len() { return Err(MemoryError::OutOfBounds) }
-        let bytes = val.to_le_bytes();
+    pub fn write_half_word(&mut self, addr: usize, val: u32) -> Result<(), MemoryError> {
+        if addr+1 >= self.data.len() { return Err(MemoryError::OutOfBounds) }
+        let bytes = (val as u16).to_le_bytes();
         self.data[addr..addr+2].copy_from_slice(&bytes);
         Ok(())
     }
 
     pub fn write_word(&mut self, addr: usize, val: u32) -> Result<(), MemoryError> {
-        if addr+4 >= self.data.len() { return Err(MemoryError::OutOfBounds) }
+        if addr+3 >= self.data.len() { return Err(MemoryError::OutOfBounds) }
         let bytes = val.to_le_bytes();
         self.data[addr..addr+4].copy_from_slice(&bytes);
         Ok(())
     }
 
     pub fn write_double_word(&mut self, addr: usize, val: u64) -> Result<(), MemoryError> {
-        if addr+8 >= self.data.len() { return Err(MemoryError::OutOfBounds) }
+        if addr+7 >= self.data.len() { return Err(MemoryError::OutOfBounds) }
         let bytes = val.to_le_bytes();
         self.data[addr..addr+8].copy_from_slice(&bytes);
         Ok(())

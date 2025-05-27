@@ -20,13 +20,15 @@ fn test_program_counter_set() {
 
 #[test]
 fn test_memory_read_write() {
-    let mut memory = Memory::new(16);
+    let mut memory = Memory::new(24);
     
     memory.write_byte(0, 0xCF).expect("Couldn't write byte to address 0");
-    assert_eq!(memory.read_byte(0).expect("Couldn't read byte from address 0"), 0xCF);
+    assert_eq!(memory.read_byte(0, false).expect("Couldn't read byte from address 0"), 0xCF);
+    assert_eq!(memory.read_byte(0, true).expect("Couldn't read byte from address 0") as i32, -0x31);
 
     memory.write_half_word(1, 0xA1B3).expect("Couldn't write half word to address 1");
-    assert_eq!(memory.read_half_word(1).expect("Couldn't read half word from address 1"), 0xA1B3);
+    assert_eq!(memory.read_half_word(1, false).expect("Couldn't read half word from address 1"), 0xA1B3);
+    assert_eq!(memory.read_half_word(1, true).expect("Couldn't read half word from address 1") as i32, -0x5E4D);
 
     memory.write_word(3, 0x12FD32AC).expect("Couldn't write word to address 3");
     assert_eq!(memory.read_word(3).expect("Couldn't read word from address 3"), 0x12FD32AC);

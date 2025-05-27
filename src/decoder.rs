@@ -27,6 +27,7 @@ pub fn decode(instruction: u32) -> Option<DecodedInstr> {
         0b1110011 => Some(DecodedInstr::I(IType::from(instruction))),
         0b0011011 => Some(DecodedInstr::I(IType::from(instruction))),
         0b0111011 => Some(DecodedInstr::R(RType::from(instruction))),
+        0b0001111 => Some(DecodedInstr::I(IType::from(instruction))),
         _ => None
     }
 }
