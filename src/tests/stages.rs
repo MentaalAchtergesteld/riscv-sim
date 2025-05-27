@@ -1,4 +1,4 @@
-use crate::{components::*, decoder::*, instruction_formats::*, stages::*};
+use crate::{components::*, instruction_formats::*, stages::*};
 
 #[test]
 fn test_instruction_fetch_and_pc_increment() {
@@ -8,23 +8,20 @@ fn test_instruction_fetch_and_pc_increment() {
     memory.write_word(0, 0x00000013).unwrap();
     memory.write_word(4, 0x00100093).unwrap();
 
-    let instr1 = instruction_fetch(&pc, &memory).unwrap();
+    let instr1 = fetch_instruction(&pc, &memory).unwrap();
     assert_eq!(instr1, 0x00000013);
 
     pc.increment();
 
-    let instr2 = instruction_fetch(&pc, &memory).unwrap();
+    let instr2 = fetch_instruction(&pc, &memory).unwrap();
     assert_eq!(instr2, 0x00100093);
 }
 
 #[test]
 fn test_decode_addi() {
-    let pc = ProgramCounter { address: 0x1000 };
     let instruction = 0x00108093;
 
-    let result = decode_instruction(instruction, pc.address).expect("Couldn't decode instruction");
-
-    assert_eq!(result.pc, 0x1000);
+    let decoded_instruction = decode_instruction(instruction).expect("Couldn't decode instruction");
 
     let expected = DecodedInstr::I(IType {
         opcode: 0x13,
@@ -36,7 +33,7 @@ fn test_decode_addi() {
         func7: 0
     });
 
-    assert_eq!(result.instruction, expected);
+    assert_eq!(decoded_instruction, expected);
 }
 
 #[test]

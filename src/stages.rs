@@ -1,19 +1,44 @@
-use crate::{components::{Memory, MemoryError, ProgramCounter}, decoder::{decode, DecodedInstr}, instruction_formats::{BType, IType, JType, RType, SType, UType}};
+use crate::{components::{Memory, MemoryError, ProgramCounter}, instruction_formats::{BType, IType, JType, RType, SType, UType}, util::extract_bits};
 
-pub fn instruction_fetch(pc: &ProgramCounter, memory: &Memory) -> Result<u32, MemoryError> {
+pub fn fetch_instruction(pc: &ProgramCounter, memory: &Memory) -> Result<u32, MemoryError> {
     memory.read_word(pc.address as usize)
 }
 
-pub struct InstructionDecodeResult {
-    pub instruction: DecodedInstr,
-    pub pc: u32,
+#[derive(Debug, PartialEq, Clone)]
+pub enum DecodedInstr {
+    R(RType),
+    I(IType),
+    S(SType),
+    B(BType),
+    U(UType),
+    J(JType)
 }
 
-pub fn decode_instruction(instruction: u32, pc_address: u32) -> Option<InstructionDecodeResult> {
-    Some(InstructionDecodeResult {
-        instruction: decode(instruction)?,
-        pc: pc_address
-    })
+#[derive(Debug, thiserror::Error)]
+pub enum DecodeError {
+    #[error("Unknown opcode: {0:8x}")]
+    UnknownOpcode(u8),
+}
+
+pub fn decode_instruction(instruction: u32) -> Result<DecodedInstr, DecodeError> {
+    let opcode = extract_bits(instruction, 6, 0) as u8;
+
+    match opcode {
+        0b0110011 => Ok(DecodedInstr::R(RType::from(instruction))),
+        0b0010011 => Ok(DecodedInstr::I(IType::from(instruction))),
+        0b0000011 => Ok(DecodedInstr::I(IType::from(instruction))),
+        0b0100011 => Ok(DecodedInstr::S(SType::from(instruction))),
+        0b1100011 => Ok(DecodedInstr::B(BType::from(instruction))),
+        0b1101111 => Ok(DecodedInstr::J(JType::from(instruction))),
+        0b1100111 => Ok(DecodedInstr::I(IType::from(instruction))),
+        0b0110111 => Ok(DecodedInstr::U(UType::from(instruction))),
+        0b0010111 => Ok(DecodedInstr::U(UType::from(instruction))),
+        0b1110011 => Ok(DecodedInstr::I(IType::from(instruction))),
+        0b0011011 => Ok(DecodedInstr::I(IType::from(instruction))),
+        0b0111011 => Ok(DecodedInstr::R(RType::from(instruction))),
+        0b0001111 => Ok(DecodedInstr::I(IType::from(instruction))),
+        _ => Err(DecodeError::UnknownOpcode(opcode))
+    }
 }
 
 #[derive(Debug, PartialEq)]
@@ -21,7 +46,7 @@ pub enum MemSize {
     Byte,
     Half,
     Word,
-    DoubleWord
+    // DoubleWord
 }
 
 #[derive(Debug, PartialEq)]
@@ -382,8 +407,9 @@ pub fn execute_j(j: &JType, pc: u32) -> Option<ExecuteResult> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, thiserror::Error)]
 pub enum ExecuteError {
+    #[error("Unimplemented instruction: {instruction:?}, type: {instr_type}")]
     UnimplementedInstruction{ instr_type: String , instruction: DecodedInstr },
 }
 

@@ -1,5 +1,5 @@
 use std::{collections::HashMap, fs, io, path::Path};
-use crate::{decoder::{decode, DecodedInstr}, instruction_formats::*};
+use crate::{instruction_formats::*, stages::{decode_instruction, DecodedInstr}};
 
 #[test]
 fn test_rtype_decode() {
@@ -89,11 +89,8 @@ fn test_opcode_decode() {
     }
 
     for (instruction, expected) in instructions {
-        if let Some(decoded) = decode(instruction) {
-            assert!(same_variant(&decoded, &expected));
-        } else {
-            panic!("Couldn't decode instruction: 0x{:08x}", instruction);
-        }
+        let decoded = decode_instruction(instruction).unwrap();
+        assert!(same_variant(&decoded, &expected));
     }
 }
 
@@ -216,7 +213,7 @@ fn run_test(test: &str) -> Result<(), io::Error> {
     let expected = read_expected_instructions(test)?;
 
     for (instruction, expected) in instructions.iter().zip(expected) {
-        let decoded = decode(*instruction)
+        let decoded = decode_instruction(*instruction)
             .expect(&format!("Couldn't decode instruction 0x{:08x}", instruction));
 
         assert_eq!(decoded, expected);
