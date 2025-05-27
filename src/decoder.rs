@@ -1,7 +1,7 @@
 use crate::instruction_formats::*;
 use crate::util::*;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum DecodedInstr {
     R(RType),
     I(IType),

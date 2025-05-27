@@ -1,4 +1,4 @@
-use crate::{components::{Memory, ProgramCounter}, decoder::DecodedInstr, instruction_formats::{BType, IType, JType, RType, SType, UType}, stages::{decode_instruction, execute, instruction_fetch, MemSize, WriteBack}};
+use crate::{components::*, decoder::*, instruction_formats::*, stages::*};
 
 #[test]
 fn test_instruction_fetch_and_pc_increment() {
@@ -51,7 +51,7 @@ fn test_execute_add() {
         rs2: 0,
     });
 
-    let execute_result = execute(&instruction, 1, 2, 0);
+    let execute_result = execute(&instruction, 1, 2, 0).unwrap();
 
     let writeback = execute_result.write_back.unwrap();
     assert_eq!(writeback.rd, 1);
@@ -70,7 +70,7 @@ fn test_execute_sub() {
         rs2: 0,
     });
 
-    let execute_result = execute(&instruction, 5, 3, 0);
+    let execute_result = execute(&instruction, 5, 3, 0).unwrap();
 
     let writeback = execute_result.write_back.unwrap();
     assert_eq!(writeback.rd, 1);
@@ -89,7 +89,7 @@ fn test_execute_sll() {
         rs2: 0,
     });
 
-    let execute_result = execute(&instruction, 32, 2, 0);
+    let execute_result = execute(&instruction, 32, 2, 0).unwrap();
 
 
     let writeback = execute_result.write_back.unwrap();
@@ -109,13 +109,13 @@ fn test_execute_slt() {
         rs2: 0,
     });
 
-    let execute_result = execute(&instruction, 5, -4, 0);
+    let execute_result = execute(&instruction, 5, -4, 0).unwrap();
 
     let writeback = execute_result.write_back.unwrap();
     assert_eq!(writeback.rd, 1);
     assert_eq!(writeback.value, 0);
 
-    let execute_result = execute(&instruction, -1, 7, 0);
+    let execute_result = execute(&instruction, -1, 7, 0).unwrap();
 
     let writeback = execute_result.write_back.unwrap();
     assert_eq!(writeback.rd, 1);
@@ -134,13 +134,13 @@ fn test_execute_sltu() {
         rs2: 0,
     });
 
-    let execute_result = execute(&instruction, 5, 4, 0);
+    let execute_result = execute(&instruction, 5, 4, 0).unwrap();
 
     let writeback = execute_result.write_back.unwrap();
     assert_eq!(writeback.rd, 1);
     assert_eq!(writeback.value, 0);
 
-    let execute_result = execute(&instruction, 2, 10, 0);
+    let execute_result = execute(&instruction, 2, 10, 0).unwrap();
 
     let writeback = execute_result.write_back.unwrap();
     assert_eq!(writeback.rd, 1);
@@ -159,7 +159,7 @@ fn test_execute_xor() {
         rs2: 0,
     });
 
-    let execute_result = execute(&instruction, 0b1111, 0b1010, 0);
+    let execute_result = execute(&instruction, 0b1111, 0b1010, 0).unwrap();
 
     let writeback = execute_result.write_back.unwrap();
     assert_eq!(writeback.rd, 1);
@@ -178,7 +178,7 @@ fn test_execute_srl() {
         rs2: 0,
     });
 
-    let execute_result = execute(&instruction, 128, 2, 0);
+    let execute_result = execute(&instruction, 128, 2, 0).unwrap();
 
     let writeback = execute_result.write_back.unwrap();
     assert_eq!(writeback.rd, 1);
@@ -197,7 +197,7 @@ fn test_execute_sra() {
         rs2: 0,
     });
 
-    let execute_result = execute(&instruction, -128, 2, 0);
+    let execute_result = execute(&instruction, -128, 2, 0).unwrap();
 
     let writeback = execute_result.write_back.unwrap();
     assert_eq!(writeback.rd, 1);
@@ -216,7 +216,7 @@ fn test_execute_or() {
         rs2: 0,
     });
 
-    let execute_result = execute(&instruction, 0b1010, 0b0101, 0);
+    let execute_result = execute(&instruction, 0b1010, 0b0101, 0).unwrap();
 
     let writeback = execute_result.write_back.unwrap();
     assert_eq!(writeback.rd, 1);
@@ -235,7 +235,7 @@ fn test_execute_and() {
         rs2: 0,
     });
 
-    let execute_result = execute(&instruction, 0b1111, 0b1010, 0);
+    let execute_result = execute(&instruction, 0b1111, 0b1010, 0).unwrap();
 
     let writeback = execute_result.write_back.unwrap();
     assert_eq!(writeback.rd, 1);
@@ -254,7 +254,7 @@ fn test_execute_jarl() {
         shamt: 0
     });
 
-    let execute_result = execute(&instruction, 32, 0, 4);
+    let execute_result = execute(&instruction, 32, 0, 4).unwrap();
 
     let writeback = execute_result.write_back.unwrap();
     assert_eq!(writeback.rd, 1);
@@ -276,7 +276,7 @@ fn test_execute_lb() {
         shamt: 0
     });
 
-    let execute_result = execute(&instruction, 32, 0, 4);
+    let execute_result = execute(&instruction, 32, 0, 4).unwrap();
 
     let read_mem = execute_result.read_mem.unwrap();
     assert_eq!(read_mem.rd, 1);
@@ -297,7 +297,7 @@ fn test_execute_lh() {
         shamt: 0
     });
 
-    let execute_result = execute(&instruction, 32, 0, 4);
+    let execute_result = execute(&instruction, 32, 0, 4).unwrap();
 
     let read_mem = execute_result.read_mem.unwrap();
     assert_eq!(read_mem.rd, 1);
@@ -318,7 +318,7 @@ fn test_execute_lw() {
         shamt: 0
     });
 
-    let execute_result = execute(&instruction, 32, 0, 4);
+    let execute_result = execute(&instruction, 32, 0, 4).unwrap();
 
     let read_mem = execute_result.read_mem.unwrap();
     assert_eq!(read_mem.rd, 1);
@@ -339,7 +339,7 @@ fn test_execute_lbu() {
         shamt: 0
     });
 
-    let execute_result = execute(&instruction, 32, 0, 4);
+    let execute_result = execute(&instruction, 32, 0, 4).unwrap();
 
     let read_mem = execute_result.read_mem.unwrap();
     assert_eq!(read_mem.rd, 1);
@@ -360,7 +360,7 @@ fn test_execute_lhu() {
         shamt: 0
     });
 
-    let execute_result = execute(&instruction, 32, 0, 4);
+    let execute_result = execute(&instruction, 32, 0, 4).unwrap();
 
     let read_mem = execute_result.read_mem.unwrap();
     assert_eq!(read_mem.rd, 1);
@@ -381,7 +381,7 @@ fn test_execute_addi() {
         shamt: 0
     });
 
-    let execute_result = execute(&instruction, 32, 0, 4);
+    let execute_result = execute(&instruction, 32, 0, 4).unwrap();
 
     let writeback = execute_result.write_back.unwrap();
     assert_eq!(writeback.rd, 1);
@@ -400,13 +400,13 @@ fn test_execute_slti() {
         shamt: 0
     });
 
-    let execute_result = execute(&instruction, -1, 0, 4);
+    let execute_result = execute(&instruction, -1, 0, 4).unwrap();
 
     let writeback = execute_result.write_back.unwrap();
     assert_eq!(writeback.rd, 1);
     assert_eq!(writeback.value, 1);
 
-    let execute_result = execute(&instruction, 32, 0, 4);
+    let execute_result = execute(&instruction, 32, 0, 4).unwrap();
 
     let writeback = execute_result.write_back.unwrap();
     assert_eq!(writeback.rd, 1);
@@ -425,13 +425,13 @@ fn test_execute_sltiu() {
         shamt: 0
     });
 
-    let execute_result = execute(&instruction, 1, 0, 4);
+    let execute_result = execute(&instruction, 1, 0, 4).unwrap();
 
     let writeback = execute_result.write_back.unwrap();
     assert_eq!(writeback.rd, 1);
     assert_eq!(writeback.value, 1);
 
-    let execute_result = execute(&instruction, 32, 0, 4);
+    let execute_result = execute(&instruction, 32, 0, 4).unwrap();
 
     let writeback = execute_result.write_back.unwrap();
     assert_eq!(writeback.rd, 1);
@@ -450,7 +450,7 @@ fn test_execute_xori() {
         shamt: 0
     });
 
-    let execute_result = execute(&instruction, 0b1111, 0, 4);
+    let execute_result = execute(&instruction, 0b1111, 0, 4).unwrap();
 
     let writeback = execute_result.write_back.unwrap();
     assert_eq!(writeback.rd, 1);
@@ -469,7 +469,7 @@ fn test_execute_ori() {
         shamt: 0
     });
 
-    let execute_result = execute(&instruction, 0b0101, 0, 4);
+    let execute_result = execute(&instruction, 0b0101, 0, 4).unwrap();
 
     let writeback = execute_result.write_back.unwrap();
     assert_eq!(writeback.rd, 1);
@@ -488,7 +488,7 @@ fn test_execute_andi() {
         shamt: 0
     });
 
-    let execute_result = execute(&instruction, 0b1111, 0, 4);
+    let execute_result = execute(&instruction, 0b1111, 0, 4).unwrap();
 
     let writeback = execute_result.write_back.unwrap();
     assert_eq!(writeback.rd, 1);
@@ -507,7 +507,7 @@ fn test_execute_slli() {
         shamt: 0
     });
 
-    let execute_result = execute(&instruction, 32, 0, 4);
+    let execute_result = execute(&instruction, 32, 0, 4).unwrap();
 
     let writeback = execute_result.write_back.unwrap();
     assert_eq!(writeback.rd, 1);
@@ -526,7 +526,7 @@ fn test_execute_srli() {
         shamt: 0
     });
 
-    let execute_result = execute(&instruction, 128, 0, 4);
+    let execute_result = execute(&instruction, 128, 0, 4).unwrap();
 
     let writeback = execute_result.write_back.unwrap();
     assert_eq!(writeback.rd, 1);
@@ -545,7 +545,7 @@ fn test_execute_srai() {
         shamt: 0
     });
 
-    let execute_result = execute(&instruction, -128, 0, 4);
+    let execute_result = execute(&instruction, -128, 0, 4).unwrap();
 
     let writeback = execute_result.write_back.unwrap();
     assert_eq!(writeback.rd, 1);
@@ -592,7 +592,7 @@ fn test_execute_sb() {
         imm: 16,
     });
 
-    let execute_result = execute(&instruction, 32, 0xCF, 4);
+    let execute_result = execute(&instruction, 32, 0xCF, 4).unwrap();
 
     let write_mem = execute_result.write_mem.unwrap();
     assert_eq!(write_mem.address, 48);
@@ -610,7 +610,7 @@ fn test_execute_sh() {
         imm: 16,
     });
 
-    let execute_result = execute(&instruction, 32, 0xCFCF, 4);
+    let execute_result = execute(&instruction, 32, 0xCFCF, 4).unwrap();
 
     let write_mem = execute_result.write_mem.unwrap();
     assert_eq!(write_mem.address, 48);
@@ -628,7 +628,7 @@ fn test_execute_sw() {
         imm: 16,
     });
 
-    let execute_result = execute(&instruction, 32, 0x1FCFCFCF, 4);
+    let execute_result = execute(&instruction, 32, 0x1FCFCFCF, 4).unwrap();
 
     let write_mem = execute_result.write_mem.unwrap();
     assert_eq!(write_mem.address, 48);
@@ -646,10 +646,10 @@ fn test_execute_beq() {
         imm: 16,
     });
 
-    let execute_result = execute(&instruction, 32, 16, 4);
+    let execute_result = execute(&instruction, 32, 16, 4).unwrap();
     assert_eq!(execute_result.branch_addr, None);
 
-    let execute_result = execute(&instruction, 32, 32, 4);
+    let execute_result = execute(&instruction, 32, 32, 4).unwrap();
     assert_eq!(execute_result.branch_addr.unwrap(), 20);
 }
 
@@ -663,10 +663,10 @@ fn test_execute_bne() {
         imm: 16,
     });
 
-    let execute_result = execute(&instruction, 32, 32, 4);
+    let execute_result = execute(&instruction, 32, 32, 4).unwrap();
     assert_eq!(execute_result.branch_addr, None);
 
-    let execute_result = execute(&instruction, 32, 16, 4);
+    let execute_result = execute(&instruction, 32, 16, 4).unwrap();
     assert_eq!(execute_result.branch_addr.unwrap(), 20);
 }
 
@@ -680,10 +680,10 @@ fn test_execute_blt() {
         imm: 16,
     });
 
-    let execute_result = execute(&instruction, -32, -32, 4);
+    let execute_result = execute(&instruction, -32, -32, 4).unwrap();
     assert_eq!(execute_result.branch_addr, None);
 
-    let execute_result = execute(&instruction, -16, 32, 4);
+    let execute_result = execute(&instruction, -16, 32, 4).unwrap();
     assert_eq!(execute_result.branch_addr.unwrap(), 20);
 }
 
@@ -697,13 +697,13 @@ fn test_execute_bge() {
         imm: 16,
     });
 
-    let execute_result = execute(&instruction, -16, 32, 4);
+    let execute_result = execute(&instruction, -16, 32, 4).unwrap();
     assert_eq!(execute_result.branch_addr, None);
 
-    let execute_result = execute(&instruction, -32, -32, 4);
+    let execute_result = execute(&instruction, -32, -32, 4).unwrap();
     assert_eq!(execute_result.branch_addr.unwrap(), 20);
 
-    let execute_result = execute(&instruction, 32, -16, 4);
+    let execute_result = execute(&instruction, 32, -16, 4).unwrap();
     assert_eq!(execute_result.branch_addr.unwrap(), 20);
 }
 
@@ -717,10 +717,10 @@ fn test_execute_bltu() {
         imm: 16,
     });
 
-    let execute_result = execute(&instruction, 32, 32, 4);
+    let execute_result = execute(&instruction, 32, 32, 4).unwrap();
     assert_eq!(execute_result.branch_addr, None);
 
-    let execute_result = execute(&instruction, 16, 32, 4);
+    let execute_result = execute(&instruction, 16, 32, 4).unwrap();
     assert_eq!(execute_result.branch_addr.unwrap(), 20);
 }
 
@@ -734,13 +734,13 @@ fn test_execute_bgeu() {
         imm: 16,
     });
 
-    let execute_result = execute(&instruction, 16, 32, 4);
+    let execute_result = execute(&instruction, 16, 32, 4).unwrap();
     assert_eq!(execute_result.branch_addr, None);
 
-    let execute_result = execute(&instruction, 32, 32, 4);
+    let execute_result = execute(&instruction, 32, 32, 4).unwrap();
     assert_eq!(execute_result.branch_addr.unwrap(), 20);
 
-    let execute_result = execute(&instruction, 32, 16, 4);
+    let execute_result = execute(&instruction, 32, 16, 4).unwrap();
     assert_eq!(execute_result.branch_addr.unwrap(), 20);
 }
 
@@ -752,7 +752,7 @@ fn test_execute_lui() {
         imm: 0x12345000,
     });
 
-    let execute_result = execute(&instruction, 0, 0, 4);
+    let execute_result = execute(&instruction, 0, 0, 4).unwrap();
     
     let writeback = execute_result.write_back.unwrap();
     assert_eq!(writeback.rd, 1);
@@ -767,7 +767,7 @@ fn test_execute_auipc() {
         imm: 0x12345000,
     });
 
-    let execute_result = execute(&instruction, 0, 0, 4);
+    let execute_result = execute(&instruction, 0, 0, 4).unwrap();
     
     let writeback = execute_result.write_back.unwrap();
     assert_eq!(writeback.rd, 1);
@@ -782,7 +782,7 @@ fn test_execute_jal() {
         imm: 32,
     });
 
-    let execute_result = execute(&instruction, 0, 0, 4);
+    let execute_result = execute(&instruction, 0, 0, 4).unwrap();
     
     let writeback = execute_result.write_back.unwrap();
     assert_eq!(writeback.rd, 1);

@@ -76,7 +76,7 @@ impl ExecuteResult {
     }
 }
 
-pub fn execute_r(r: &RType, rs1_val: i32, rs2_val: i32, pc: u32) -> Option<ExecuteResult> {
+pub fn execute_r(r: &RType, rs1_val: i32, rs2_val: i32) -> Option<ExecuteResult> {
     match r.opcode {
         0b0110011 => match (r.func7, r.func3) {
             (0x00, 0x0) => { // ADD Add
@@ -267,7 +267,7 @@ pub fn execute_i(i: &IType, rs1_val: i32, pc: u32) -> Option<ExecuteResult> {
     }
 }
 
-pub fn execute_s(s: &SType, rs1_val: i32, rs2_val: i32, pc: u32) -> Option<ExecuteResult> {
+pub fn execute_s(s: &SType, rs1_val: i32, rs2_val: i32) -> Option<ExecuteResult> {
     match s.opcode {
         0b0100011 => match s.func {
             0x0 => { // SB Store byte
@@ -382,19 +382,24 @@ pub fn execute_j(j: &JType, pc: u32) -> Option<ExecuteResult> {
     }
 }
 
-pub fn execute(instruction: &DecodedInstr, rs1_val: i32, rs2_val: i32, pc: u32) -> ExecuteResult {
+#[derive(Debug)]
+pub enum ExecuteError {
+    UnimplementedInstruction{ instr_type: String , instruction: DecodedInstr },
+}
+
+pub fn execute(instruction: &DecodedInstr, rs1_val: i32, rs2_val: i32, pc: u32) -> Result<ExecuteResult, ExecuteError> {
     match instruction {
-        DecodedInstr::R(r) => execute_r(r, rs1_val, rs2_val, pc)
-            .expect(&format!("Unimplemented R-type instruction: {:?}", r)),
+        DecodedInstr::R(r) => execute_r(r, rs1_val, rs2_val)
+            .ok_or(ExecuteError::UnimplementedInstruction { instr_type: "R".into(), instruction: instruction.clone() }),
         DecodedInstr::I(i) => execute_i(i, rs1_val, pc)
-            .expect(&format!("Unimplemented I-type instruction: {:?}", i)),
-        DecodedInstr::S(s) => execute_s(s, rs1_val, rs2_val, pc)
-            .expect(&format!("Unimplemented S-type instruction: {:?}", s)),
+            .ok_or(ExecuteError::UnimplementedInstruction { instr_type: "I".into(), instruction: instruction.clone() }),
+        DecodedInstr::S(s) => execute_s(s, rs1_val, rs2_val)
+            .ok_or(ExecuteError::UnimplementedInstruction { instr_type: "S".into(), instruction: instruction.clone() }),
         DecodedInstr::B(b) => execute_b(b, rs1_val, rs2_val, pc)
-            .expect(&format!("Unimplemented B-type instruction: {:?}", b)),
+            .ok_or(ExecuteError::UnimplementedInstruction { instr_type: "B".into(), instruction: instruction.clone() }),
         DecodedInstr::U(u) => execute_u(u, pc)
-            .expect(&format!("Unimplemented U-type instruction: {:?}", u)),
+            .ok_or(ExecuteError::UnimplementedInstruction { instr_type: "U".into(), instruction: instruction.clone() }),
         DecodedInstr::J(j) => execute_j(j, pc)
-            .expect(&format!("Unimplemented J-type instruction: {:?}", j)),
+            .ok_or(ExecuteError::UnimplementedInstruction { instr_type: "J".into(), instruction: instruction.clone() }),
     }
 }

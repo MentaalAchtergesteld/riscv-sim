@@ -1,6 +1,6 @@
 use crate::util::extract_bits;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct RType {
     pub opcode: u8,
     pub rd: u8,
@@ -34,7 +34,7 @@ impl From<u32> for RType {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct IType {
     pub opcode: u8,
     pub rd: u8,
@@ -70,7 +70,7 @@ impl From<u32> for IType {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct SType {
     pub opcode: u8,
     pub imm: i32,
@@ -101,7 +101,7 @@ impl From<u32> for SType {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct BType {
     pub opcode: u8,
     pub imm: i32,
@@ -138,7 +138,7 @@ impl From<u32> for BType {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct UType {
     pub opcode: u8,
     pub rd: u8,
@@ -161,7 +161,7 @@ impl From<u32> for UType {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct JType {
     pub opcode: u8,
     pub rd: u8,
