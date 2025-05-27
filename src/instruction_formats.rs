@@ -36,7 +36,9 @@ pub struct IType {
     pub rd: u8,
     pub func: u16,
     pub rs1: u8,
-    pub imm: i32
+    pub shamt: u8,
+    pub funct7: u8,
+    pub imm: i32,
 }
 
 impl From<u32> for IType {
@@ -45,16 +47,21 @@ impl From<u32> for IType {
         let rd = extract_bits(value, 11, 7)    as u8;
         let func = extract_bits(value, 14, 12) as u16;
         let rs1 = extract_bits(value, 19, 15)  as u8;
-        let imm_raw = extract_bits(value, 31, 20) as i32;
+        let imm_raw = extract_bits(value, 31, 20);
 
-        let imm = (imm_raw << 20) >> 20;
+        let shamt = (imm_raw & 0x1F) as u8;
+        let funct7 = (imm_raw >> 5) as u8;
+
+        let imm = ((imm_raw as i32) << 20) >> 20;
 
         Self {
             opcode,
             rd,
             func,
             rs1,
-            imm
+            imm,
+            shamt,
+            funct7
         }
     }
 }

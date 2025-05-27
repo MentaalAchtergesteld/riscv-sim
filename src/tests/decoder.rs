@@ -152,51 +152,53 @@ fn read_expected_instructions(test: &str) -> Result<Vec<DecodedInstr>, io::Error
                 "R-type" => {
                     Some(DecodedInstr::R(RType {
                         opcode,
-                        rd: *data.entry("rd").or_default() as u8,
-                        rs1: *data.entry("rs1").or_default() as u8,
-                        rs2: *data.entry("rs2").or_default() as u8,
-                        func: *data.entry("func").or_default() as u16,
+                        rd: *data.get("rd").unwrap_or(&0) as u8,
+                        rs1: *data.get("rs1").unwrap_or(&0) as u8,
+                        rs2: *data.get("rs2").unwrap_or(&0) as u8,
+                        func: *data.get("func").unwrap_or(&0) as u16,
                     }))
                 },
                 "I-type" => {
                     Some(DecodedInstr::I(IType {
                         opcode,
-                        rd: *data.entry("rd").or_default() as u8,
-                        func: *data.entry("func").or_default() as u16,
-                        rs1: *data.entry("rs1").or_default() as u8,
-                        imm: ((*data.entry("imm").or_default() as i32) << 20) >> 20,
+                        rd: *data.get("rd").unwrap_or(&0) as u8,
+                        func: *data.get("func").unwrap_or(&0) as u16,
+                        rs1: *data.get("rs1").unwrap_or(&0) as u8,
+                        imm: ((*data.get("imm").unwrap_or(&0) as i32) << 20) >> 20,
+                        shamt: (*data.get("imm").unwrap_or(&0) & 0x1F) as u8,
+                        funct7: (*data.get("imm").unwrap_or(&0) >> 5) as u8,
                     }))
                 },
                 "S-type" => {
                     Some(DecodedInstr::S(SType {
                         opcode,
-                        imm: ((*data.entry("imm").or_default() as i32) << 20) >> 20,
-                        func: *data.entry("func").or_default() as u16,
-                        rs1: *data.entry("rs1").or_default() as u8,
-                        rs2: *data.entry("rs2").or_default() as u8
+                        imm: ((*data.get("imm").unwrap_or(&0) as i32) << 20) >> 20,
+                        func: *data.get("func").unwrap_or(&0) as u16,
+                        rs1: *data.get("rs1").unwrap_or(&0) as u8,
+                        rs2: *data.get("rs2").unwrap_or(&0) as u8
                     }))
                 },
                 "B-type" => {
                     Some(DecodedInstr::B(BType {
                         opcode,
-                        imm: ((*data.entry("imm").or_default() as i32) << 19) >> 19,
-                        func: *data.entry("func").or_default() as u16,
-                        rs1: *data.entry("rs1").or_default() as u8,
-                        rs2: *data.entry("rs2").or_default() as u8
+                        imm: ((*data.get("imm").unwrap_or(&0) as i32) << 19) >> 19,
+                        func: *data.get("func").unwrap_or(&0) as u16,
+                        rs1: *data.get("rs1").unwrap_or(&0) as u8,
+                        rs2: *data.get("rs2").unwrap_or(&0) as u8
                     }))
                 },
                 "U-type" => {
                     Some(DecodedInstr::U(UType {
                         opcode,
-                        rd: *data.entry("rd").or_default() as u8,
-                        imm: *data.entry("imm").or_default() as i32,
+                        rd: *data.get("rd").unwrap_or(&0) as u8,
+                        imm: *data.get("imm").unwrap_or(&0) as i32,
                     }))
                 },
                 "J-type" => {
                     Some(DecodedInstr::J(JType {
                         opcode,
-                        rd: *data.entry("rd").or_default() as u8,
-                        imm: ((*data.entry("imm").or_default() as i32) << 11) >> 11
+                        rd: *data.get("rd").unwrap_or(&0) as u8,
+                        imm: ((*data.get("imm").unwrap_or(&0) as i32) << 11) >> 11
                     }))
                 },
                 _ => return None
