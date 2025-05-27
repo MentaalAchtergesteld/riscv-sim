@@ -38,10 +38,10 @@ impl From<u32> for RType {
 pub struct IType {
     pub opcode: u8,
     pub rd: u8,
-    pub func: u16,
+    pub func3: u8,
     pub rs1: u8,
     pub shamt: u8,
-    pub funct7: u8,
+    pub func7: u8,
     pub imm: i32,
 }
 
@@ -49,23 +49,23 @@ impl From<u32> for IType {
     fn from(value: u32) -> Self {
         let opcode = extract_bits(value, 6, 0) as u8;
         let rd = extract_bits(value, 11, 7)    as u8;
-        let func = extract_bits(value, 14, 12) as u16;
+        let func3 = extract_bits(value, 14, 12) as u8;
         let rs1 = extract_bits(value, 19, 15)  as u8;
         let imm_raw = extract_bits(value, 31, 20);
 
         let shamt = (imm_raw & 0x1F) as u8;
-        let funct7 = (imm_raw >> 5) as u8;
+        let func7 = (imm_raw >> 5) as u8;
 
         let imm = ((imm_raw as i32) << 20) >> 20;
 
         Self {
             opcode,
             rd,
-            func,
+            func3,
             rs1,
             imm,
             shamt,
-            funct7
+            func7
         }
     }
 }

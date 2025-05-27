@@ -20,7 +20,7 @@ fn test_itype_decode() {
 
     assert_eq!(i.opcode, 0x13);
     assert_eq!(i.rd, 0x0C);
-    assert_eq!(i.func, 0x06);
+    assert_eq!(i.func3, 0x06);
     assert_eq!(i.rs1, 0x17);
     assert_eq!(i.imm, -0x04);
 }
@@ -142,7 +142,7 @@ fn read_expected_instructions(test: &str) -> Result<Vec<DecodedInstr>, io::Error
 
             let instr_type = splitted_data.remove(1);
 
-            let mut data = splitted_data.iter()
+            let data = splitted_data.iter()
                 .filter_map(|keypair| read_key_pair(&keypair))
                 .collect::<HashMap<&str, u32>>();
 
@@ -164,11 +164,11 @@ fn read_expected_instructions(test: &str) -> Result<Vec<DecodedInstr>, io::Error
                     Some(DecodedInstr::I(IType {
                         opcode,
                         rd: *data.get("rd").unwrap_or(&0) as u8,
-                        func: *data.get("func").unwrap_or(&0) as u16,
+                        func3: *data.get("func").unwrap_or(&0) as u8,
                         rs1: *data.get("rs1").unwrap_or(&0) as u8,
                         imm: ((*data.get("imm").unwrap_or(&0) as i32) << 20) >> 20,
                         shamt: (*data.get("imm").unwrap_or(&0) & 0x1F) as u8,
-                        funct7: (*data.get("imm").unwrap_or(&0) >> 5) as u8,
+                        func7: (*data.get("imm").unwrap_or(&0) >> 5) as u8,
                     }))
                 },
                 "S-type" => {
