@@ -325,10 +325,31 @@ fn test_execute_lw() {
 }
 
 #[test]
-fn test_execute_lbu() {
+fn test_execute_ld() {
     let instruction = DecodedInstr::I(IType {
         opcode: 0b0000011,
         func3: 0x3,
+        rd: 1,
+        rs1: 0,
+        imm: 4,
+        func7: 0,
+        shamt: 0
+    });
+
+    let execute_result = execute(&instruction, 32, 0, 4).unwrap();
+
+    let read_mem = execute_result.read_mem.unwrap();
+    assert_eq!(read_mem.rd, 1);
+    assert_eq!(read_mem.address, 36);
+    assert_eq!(read_mem.size, MemSize::Double);
+    assert_eq!(read_mem.signed, true);
+}
+
+#[test]
+fn test_execute_lbu() {
+    let instruction = DecodedInstr::I(IType {
+        opcode: 0b0000011,
+        func3: 0x4,
         rd: 1,
         rs1: 0,
         imm: 4,
@@ -349,7 +370,7 @@ fn test_execute_lbu() {
 fn test_execute_lhu() {
     let instruction = DecodedInstr::I(IType {
         opcode: 0b0000011,
-        func3: 0x4,
+        func3: 0x5,
         rd: 1,
         rs1: 0,
         imm: 4,
@@ -499,9 +520,9 @@ fn test_execute_slli() {
         func3: 0x1,
         rd: 1,
         rs1: 0,
-        imm: 2,
+        imm: 0,
         func7: 0,
-        shamt: 0
+        shamt: 2
     });
 
     let execute_result = execute(&instruction, 32, 0, 4).unwrap();
@@ -518,9 +539,9 @@ fn test_execute_srli() {
         func3: 0x5,
         rd: 1,
         rs1: 0,
-        imm: 2,
-        func7: 0x0,
-        shamt: 0
+        imm: 0,
+        func7: 0x00,
+        shamt: 2
     });
 
     let execute_result = execute(&instruction, 128, 0, 4).unwrap();
@@ -537,9 +558,9 @@ fn test_execute_srai() {
         func3: 0x5,
         rd: 1,
         rs1: 0,
-        imm: 2,
-        func7: 0x1,
-        shamt: 0
+        imm: 0,
+        func7: 0x20,
+        shamt: 2
     });
 
     let execute_result = execute(&instruction, -128, 0, 4).unwrap();
@@ -631,6 +652,24 @@ fn test_execute_sw() {
     assert_eq!(write_mem.address, 48);
     assert_eq!(write_mem.data, 0x1FCFCFCF);
     assert_eq!(write_mem.size, MemSize::Word);
+}
+
+#[test]
+fn test_execute_sd() {
+    let instruction = DecodedInstr::S(SType {
+        opcode: 0b0100011,
+        func: 0x3,
+        rs1: 0,
+        rs2: 0,
+        imm: 16,
+    });
+
+    let execute_result = execute(&instruction, 32, 0x1FCFCFCFFFCFCFCF, 4).unwrap();
+
+    let write_mem = execute_result.write_mem.unwrap();
+    assert_eq!(write_mem.address, 48);
+    assert_eq!(write_mem.data, 0x1FCFCFCFFFCFCFCF);
+    assert_eq!(write_mem.size, MemSize::Double);
 }
 
 #[test]

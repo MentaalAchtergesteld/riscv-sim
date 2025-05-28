@@ -104,7 +104,7 @@ impl ExecuteResult {
     }
 }
 
-pub fn execute_r(r: &RType, rs1_val: i32, rs2_val: i32) -> Option<ExecuteResult> {
+pub fn execute_r(r: &RType, rs1_val: i64, rs2_val: i64) -> Option<ExecuteResult> {
     match r.opcode {
         0b0110011 => match (r.func7, r.func3) {
             (0x00, 0x0) => { // ADD Add
@@ -163,43 +163,43 @@ pub fn execute_r(r: &RType, rs1_val: i32, rs2_val: i32) -> Option<ExecuteResult>
     }
 }
 
-pub fn execute_i(i: &IType, rs1_val: i32, pc: u64) -> Option<ExecuteResult> {
+pub fn execute_i(i: &IType, rs1_val: i64, pc: u64) -> Option<ExecuteResult> {
     match i.opcode {
         0b1100111 => {// JARL
             Some(ExecuteResult::default()
                 .with_write_back(WriteBack { rd: i.rd, value: pc.wrapping_add(4) })
-                .with_branch((rs1_val.wrapping_add(i.imm) & !1) as u64)
+                .with_branch((rs1_val.wrapping_add(i.imm as i64) & !1) as u64)
             )
         },
         0b0000011 => match i.func3 {
             0x0 => { // LB Load byte
                 Some(ExecuteResult::default()
-                    .with_read_mem(ReadMem { address: rs1_val.wrapping_add(i.imm) as u64, size: MemSize::Byte, rd: i.rd, signed: true })
+                    .with_read_mem(ReadMem { address: rs1_val.wrapping_add(i.imm as i64) as u64, size: MemSize::Byte, rd: i.rd, signed: true })
                 )
             },
             0x1 => { // LH Load half word
                 Some(ExecuteResult::default()
-                    .with_read_mem(ReadMem { address: rs1_val.wrapping_add(i.imm) as u64, size: MemSize::Half, rd: i.rd, signed: true })
+                    .with_read_mem(ReadMem { address: rs1_val.wrapping_add(i.imm as i64) as u64, size: MemSize::Half, rd: i.rd, signed: true })
                 )
             },
             0x2 => { // LW Load word
                 Some(ExecuteResult::default()
-                    .with_read_mem(ReadMem { address: rs1_val.wrapping_add(i.imm) as u64, size: MemSize::Word, rd: i.rd, signed: true })
+                    .with_read_mem(ReadMem { address: rs1_val.wrapping_add(i.imm as i64) as u64, size: MemSize::Word, rd: i.rd, signed: true })
                 )
             },
             0x4 => { // LBU Load byte unsigned
                 Some(ExecuteResult::default()
-                    .with_read_mem(ReadMem { address: rs1_val.wrapping_add(i.imm) as u64, size: MemSize::Byte, rd: i.rd, signed: false })
+                    .with_read_mem(ReadMem { address: rs1_val.wrapping_add(i.imm as i64) as u64, size: MemSize::Byte, rd: i.rd, signed: false })
                 )
             },
             0x5 => { // LHU Load half word unsigned
                 Some(ExecuteResult::default()
-                    .with_read_mem(ReadMem { address: rs1_val.wrapping_add(i.imm) as u64, size: MemSize::Half, rd: i.rd, signed: false })
+                    .with_read_mem(ReadMem { address: rs1_val.wrapping_add(i.imm as i64) as u64, size: MemSize::Half, rd: i.rd, signed: false })
                 )
             },
             0x3 => { // LD Load double
                 Some(ExecuteResult::default()
-                    .with_read_mem(ReadMem { address: rs1_val.wrapping_add(i.imm) as u64, size: MemSize::Double, rd: i.rd, signed: true }),
+                    .with_read_mem(ReadMem { address: rs1_val.wrapping_add(i.imm as i64) as u64, size: MemSize::Double, rd: i.rd, signed: true }),
                 )
             }
             _ => None
@@ -207,12 +207,12 @@ pub fn execute_i(i: &IType, rs1_val: i32, pc: u64) -> Option<ExecuteResult> {
         0b0010011 => match i.func3 {
             0x0 => { // ADDI Add immediate
                 Some(ExecuteResult::default()
-                    .with_write_back(WriteBack { rd: i.rd, value: (rs1_val.wrapping_add(i.imm)) as u64 })
+                    .with_write_back(WriteBack { rd: i.rd, value: (rs1_val.wrapping_add(i.imm as i64)) as u64 })
                 )
             },
             0x2 => { // SLTI Set less than immediate
                 Some(ExecuteResult::default()
-                    .with_write_back(WriteBack { rd: i.rd, value: (rs1_val < i.imm) as u64 })
+                    .with_write_back(WriteBack { rd: i.rd, value: (rs1_val < i.imm as i64) as u64 })
                 )
             },
             0x3 => { // SLTIU Set less than immediate unsigned
@@ -222,31 +222,31 @@ pub fn execute_i(i: &IType, rs1_val: i32, pc: u64) -> Option<ExecuteResult> {
             },
             0x4 => { // XORI XOR immediate
                 Some(ExecuteResult::default()
-                    .with_write_back(WriteBack { rd: i.rd, value: (rs1_val ^ i.imm) as u64 })
+                    .with_write_back(WriteBack { rd: i.rd, value: (rs1_val ^ i.imm as i64) as u64 })
                 )
             },
             0x6 => { // ORI OR immediate
                 Some(ExecuteResult::default()
-                    .with_write_back(WriteBack { rd: i.rd, value: (rs1_val | i.imm) as u64 })
+                    .with_write_back(WriteBack { rd: i.rd, value: (rs1_val | i.imm as i64) as u64 })
                 )
             },
             0x7 => { // ANDI AND immediate
                 Some(ExecuteResult::default()
-                    .with_write_back(WriteBack { rd: i.rd, value: (rs1_val & i.imm) as u64 })
+                    .with_write_back(WriteBack { rd: i.rd, value: (rs1_val & i.imm as i64) as u64 })
                 )
             },
             0x1 => { // SLLI Shift left logical immediate
                 Some(ExecuteResult::default()
-                    .with_write_back(WriteBack { rd: i.rd, value: (rs1_val << (i.imm & 0x1f)) as u64 })
+                    .with_write_back(WriteBack { rd: i.rd, value: (rs1_val << (i.shamt & 0x1f)) as u64 })
                 )
             },
             0x5 => { 
                 match i.func7 {
                     0x0 => Some(ExecuteResult::default() // SRLI Shift right logical immediate
-                        .with_write_back(WriteBack { rd: i.rd, value: ((rs1_val as u64) >> (i.imm & 0x1f)) as u64 })
+                        .with_write_back(WriteBack { rd: i.rd, value: ((rs1_val as u64) >> (i.shamt & 0x1f)) as u64 })
                     ),
-                    0x1 => Some(ExecuteResult::default() // SRAI Shift right arithmetic immediate
-                        .with_write_back(WriteBack { rd: i.rd, value: ((rs1_val as i64) >> (i.imm & 0x1f)) as u64})
+                    0x20 => Some(ExecuteResult::default() // SRAI Shift right arithmetic immediate
+                        .with_write_back(WriteBack { rd: i.rd, value: ((rs1_val as i64) >> (i.shamt & 0x1f)) as u64})
                     ),
                     _ => None
                 }
@@ -295,27 +295,58 @@ pub fn execute_i(i: &IType, rs1_val: i32, pc: u64) -> Option<ExecuteResult> {
                 }
                 _ => None
             }
+        },
+        0b0011011 => {
+            match i.func3 {
+                0x0 => { // ADDIW Add immediate word
+                    Some(ExecuteResult::default()
+                        .with_write_back(WriteBack { rd: i.rd, value: (rs1_val.wrapping_add(i.imm as i64)) as u64 })
+                    )
+                },
+                0x1 => { // SLLI Shift left logical immediate
+                    Some(ExecuteResult::default()
+                        .with_write_back(WriteBack { rd: i.rd, value: (rs1_val << (i.shamt & 0x1f)) as u64 })
+                    )
+                },
+                0x5 => { 
+                    match i.func7 {
+                        0x0 => Some(ExecuteResult::default() // SRLI Shift right logical immediate
+                            .with_write_back(WriteBack { rd: i.rd, value: ((rs1_val as u64) >> (i.shamt & 0x1f)) as u64 })
+                        ),
+                        0x20 => Some(ExecuteResult::default() // SRAI Shift right arithmetic immediate
+                            .with_write_back(WriteBack { rd: i.rd, value: ((rs1_val as i64) >> (i.shamt & 0x1f)) as u64})
+                        ),
+                        _ => None
+                    }
+                }
+                _ => None
+            }
         }
         _ => None
     }
 }
 
-pub fn execute_s(s: &SType, rs1_val: i32, rs2_val: i32) -> Option<ExecuteResult> {
+pub fn execute_s(s: &SType, rs1_val: i64, rs2_val: i64) -> Option<ExecuteResult> {
     match s.opcode {
         0b0100011 => match s.func {
             0x0 => { // SB Store byte
                 Some(ExecuteResult::default()
-                    .with_write_mem(WriteMem { address: rs1_val.wrapping_add(s.imm) as u64, data: (rs2_val & 0xFF) as u64, size: MemSize::Byte })
+                    .with_write_mem(WriteMem { address: rs1_val.wrapping_add(s.imm as i64) as u64, data: (rs2_val & 0xFF) as u64, size: MemSize::Byte })
                 )
             },
             0x1 => { // SH Store half word
                 Some(ExecuteResult::default()
-                    .with_write_mem(WriteMem { address: rs1_val.wrapping_add(s.imm) as u64, data: (rs2_val & 0xFFFF) as u64, size: MemSize::Half })
+                    .with_write_mem(WriteMem { address: rs1_val.wrapping_add(s.imm as i64) as u64, data: (rs2_val & 0xFFFF) as u64, size: MemSize::Half })
                 )
             },
             0x2 => { // SW Store word
                 Some(ExecuteResult::default()
-                    .with_write_mem(WriteMem { address: rs1_val.wrapping_add(s.imm) as u64, data: rs2_val as u64, size: MemSize::Word })
+                    .with_write_mem(WriteMem { address: rs1_val.wrapping_add(s.imm as i64) as u64, data: rs2_val as u64, size: MemSize::Word })
+                )
+            },
+            0x3 => { // SD Store double
+                Some(ExecuteResult::default()
+                    .with_write_mem(WriteMem { address: rs1_val.wrapping_add(s.imm as i64) as u64, data: rs2_val as u64, size: MemSize::Double })
                 )
             }
             _ => None
@@ -324,7 +355,7 @@ pub fn execute_s(s: &SType, rs1_val: i32, rs2_val: i32) -> Option<ExecuteResult>
     }
 }
 
-pub fn execute_b(b: &BType, rs1_val: i32, rs2_val: i32, pc: u64) -> Option<ExecuteResult> {
+pub fn execute_b(b: &BType, rs1_val: i64, rs2_val: i64, pc: u64) -> Option<ExecuteResult> {
     match b.opcode {
         0b1100011 => match b.func {
             0x0 => { // BEQ Branch if equal
@@ -421,7 +452,7 @@ pub enum ExecuteError {
     UnimplementedInstruction{ instr_type: String , instruction: DecodedInstr },
 }
 
-pub fn execute(instruction: &DecodedInstr, rs1_val: i32, rs2_val: i32, pc: u64) -> Result<ExecuteResult, ExecuteError> {
+pub fn execute(instruction: &DecodedInstr, rs1_val: i64, rs2_val: i64, pc: u64) -> Result<ExecuteResult, ExecuteError> {
     match instruction {
         DecodedInstr::R(r) => execute_r(r, rs1_val, rs2_val)
             .ok_or(ExecuteError::UnimplementedInstruction { instr_type: "R".into(), instruction: instruction.clone() }),

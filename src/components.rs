@@ -86,7 +86,7 @@ impl Memory {
 
     pub fn write_word(&mut self, addr: usize, val: u64) -> Result<(), MemoryError> {
         if addr+3 >= self.data.len() { return Err(MemoryError::OutOfBounds { address: addr, max: self.data.len() }) }
-        let bytes = val.to_le_bytes();
+        let bytes = (val as u32).to_le_bytes();
         self.data[addr..addr+4].copy_from_slice(&bytes);
         Ok(())
     }
@@ -181,7 +181,7 @@ impl CPU {
             DecodedInstr::B(b) => self.regs[b.rs1 as usize],
             DecodedInstr::U(_) => 0,
             DecodedInstr::J(_) => 0,
-        } as i32;
+        } as i64;
 
         let rs2_val = match &decoded_instruction {
             DecodedInstr::R(r) => self.regs[r.rs2 as usize],
@@ -190,7 +190,7 @@ impl CPU {
             DecodedInstr::B(b) => self.regs[b.rs2 as usize],
             DecodedInstr::U(_) => 0,
             DecodedInstr::J(_) => 0,
-        } as i32;
+        } as i64;
 
         let execute_result = execute(&decoded_instruction, rs1_val, rs2_val, self.pc.address)
             .map_err(|e| CPUError::ExecuteError { source: e, pc: self.pc.address })?;

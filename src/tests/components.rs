@@ -33,8 +33,8 @@ fn test_memory_read_write() {
     memory.write_word(3, 0x12FD32AC).expect("Couldn't write word to address 3");
     assert_eq!(memory.read_word(3).expect("Couldn't read word from address 3"), 0x12FD32AC);
 
-    // memory.write_double_word(7, 0x3ACDA235E71BA258).expect("Couldn't write double word to address 7");
-    // assert_eq!(memory.read_double_word(7).expect("Couldn't read double word from address 7"), 0x3ACDA235E71BA258);
+    memory.write_double_word(7, 0x3ACDA235E71BA258).expect("Couldn't write double word to address 7");
+    assert_eq!(memory.read_double_word(7).expect("Couldn't read double word from address 7"), 0x3ACDA235E71BA258);
 }
 
 #[test]

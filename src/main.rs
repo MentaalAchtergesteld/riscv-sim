@@ -8,15 +8,15 @@ mod components;
 mod stages;
 
 fn main() {
-    let mut cpu = CPU::new(1024*128);
+    let mut cpu = CPU::new(1024*256);
 
-    let bin = std::fs::read("testdata/programs/msg.bin").unwrap();
+    let bin = std::fs::read("testdata/programs/brainfck.bin").unwrap();
     cpu.load_elf(&bin).unwrap();
 
 
     println!("\n--- Cycle Output ---");
     let mut msg = vec![];
-
+    
     for _ in 0..1000 {
         let result =  cpu.cycle();
 
