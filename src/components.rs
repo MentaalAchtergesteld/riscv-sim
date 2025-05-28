@@ -117,8 +117,6 @@ pub enum CPUError {
     ElfParseError,
     #[error("Too little memory to load ELF file")]
     ElfTooLittleMemoryError,
-    #[error("No elf text section found")]
-    ElfNoTextSection,
 
     #[error("Fetch error at PC={pc}: {source}")]
     FetchError {
@@ -169,10 +167,6 @@ impl CPU {
             .map_err(|e| CPUError::FetchError { source: e, pc: self.pc.address })?;
         let decoded_instruction = decode_instruction(instruction as u32)
             .map_err(|e| CPUError::DecodeError { source: e, pc: self.pc.address })?;
-
-        // println!("PC: {:08x}", self.pc.address);
-        // println!("instr: {:032b}", instruction);
-        // println!("decoded instr: {:?}", decoded_instruction);
 
         let rs1_val = match &decoded_instruction {
             DecodedInstr::R(r) => self.regs[r.rs1 as usize],
@@ -237,19 +231,11 @@ impl CPU {
 
 // Beautiful code written by Chat, because i couldn't be bothered to write this shit myself.
 
-use goblin::elf::{program_header::PT_LOAD, sym::STT_OBJECT, Elf};
+use goblin::elf::{program_header::PT_LOAD, Elf};
 
 impl CPU {
     pub fn load_elf(&mut self, elf_bytes: &[u8]) -> Result<(), CPUError> {
         let elf = Elf::parse(elf_bytes).map_err(|_| CPUError::ElfParseError)?;
-
-        // Zoek de laagste p_vaddr als base
-        let base = elf.program_headers
-            .iter()
-            .filter(|ph| ph.p_type == PT_LOAD)
-            .map(|ph| ph.p_vaddr)
-            .min()
-            .unwrap_or(0);
 
         // Laad elk PT_LOAD segment
         for ph in &elf.program_headers {
@@ -273,62 +259,13 @@ impl CPU {
             self.mem.data[mem_off .. mem_off + file_size]
                 .copy_from_slice(&elf_bytes[offset .. offset + file_size]);
 
-            // println!("{:?}", &self.mem.data[mem_off .. mem_off + file_size]);
-
             // Zero-fill voor resterende bytes (bijv. BSS)
             for b in &mut self.mem.data[mem_off + file_size .. mem_off + mem_size] {
                 *b = 0;
             }
-
-            println!(
-                "Loaded segment: 0x{:08x}–0x{:08x} (filesz=0x{:x}, memsz=0x{:x}) Mem offset: {}",
-                ph.p_vaddr,
-                ph.p_vaddr + ph.p_memsz,
-                ph.p_filesz,
-                ph.p_memsz,
-                mem_off
-            );
         }
 
-        // Zet de program counter (PC)
         self.pc.set(elf.entry as u64);
-        // self.pc.set((elf.entry - base) as u64);
-        println!("Entry point at PC = 0x{:08x}", self.pc.address);
-
-        // Symbolen tonen
-        println!("--- Global Symbols ---");
-        for sym in &elf.syms {
-            let name = elf.strtab.get_at(sym.st_name).unwrap_or("<noname>");
-            if name.is_empty() || sym.st_value == 0 {
-                continue;
-            }
-
-            if sym.is_function() {
-                println!("{:<20} FUNC     @ 0x{:08x}", name, sym.st_value);
-            } else if sym.st_type() == STT_OBJECT {
-                println!("{:<20} OBJECT   @ 0x{:08x}", name, sym.st_value);
-            }
-        }
-
-        println!("--- Data @ OBJECT symbols ---");
-        for sym in &elf.syms {
-            let name = elf.strtab.get_at(sym.st_name).unwrap_or("<noname>");
-            if name.is_empty() || sym.st_type() != STT_OBJECT {
-                continue;
-            }
-
-            let addr = sym.st_value as usize;
-            // let offset = (addr - base as usize) as usize;
-            let offset = addr as usize as usize;
-
-            if offset + 4 <= self.mem.data.len() {
-                let raw = &self.mem.data[offset..offset + 4];
-                let value = u32::from_le_bytes(raw.try_into().unwrap());
-                println!("{:<20} @0x{:08x}, {} ⇒ 0x{:08x}", name, addr, addr, value);
-            } else {
-                println!("{:<20} @0x{:08x}, {} ⇒ (out of memory range)", name, addr, addr);
-            }
-        }
 
         Ok(())
     }

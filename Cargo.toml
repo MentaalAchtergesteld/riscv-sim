@@ -6,3 +6,11 @@ edition = "2021"
 [dependencies]
 goblin = "0.9.3"
 thiserror = "2.0.12"
+
+[lib]
+name = "cpu"
+path = "src/lib.rs"
+
+[[bin]]
+name = "cpu"
+path = "src/main.rs"

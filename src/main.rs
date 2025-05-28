@@ -1,48 +1,26 @@
-use components::{CPUError, CPU};
-use stages::DecodeError;
+use std::{env, fs};
 
-mod tests;
-mod util;
-mod instruction_formats;
-mod components;
-mod stages;
+use cpu::{CPU, CPUError, DecodeError};
 
 fn main() {
-    let mut cpu = CPU::new(1024*256);
+    let args = env::args().collect::<Vec<String>>();
+    let program_path = &args[1];
+    let full_path = env::current_dir().unwrap().join(program_path);
 
-    let bin = std::fs::read("testdata/programs/brainfck.bin").unwrap();
-    cpu.load_elf(&bin).unwrap();
+    let bytes = fs::read(full_path).expect("Failed to read program");
 
+    let mut cpu = CPU::new(5012*32);
+    cpu.load_elf(&bytes).unwrap();
 
-    println!("\n--- Cycle Output ---");
-    let mut msg = vec![];
-    
-    for _ in 0..1000 {
-        let result =  cpu.cycle();
+    loop {
+        let result = cpu.cycle();
 
-        if let Err(err) = result {
-            if let CPUError::DecodeError { source: DecodeError::EndOfProgram, pc: _ } = err {
-                println!("End of program! Last PC: 0x{:08x}", cpu.pc.address);
-            } else {
-                eprintln!("CPU Error: {}", err)
+        if let Err(error) = result {
+            if let CPUError::DecodeError { source: DecodeError::EndOfProgram, pc } = error {
+                println!("Program ended at PC 0x{:08x}.", pc);
             }
 
             break;
         }
-
-        if let Some((addr, val)) = cpu.last_store {
-            if addr == 0x200 {
-                msg.push(val as u8 as char);
-            }
-        }
     }
-
-    
-    println!("\n--- Registers ---");
-    for (reg, data) in cpu.regs.iter().enumerate() {
-        println!("0x{:08x} = 0x{:08x}", reg, *data as i32);
-    }
-
-    println!("\n--- Serial Output ---");
-    println!("{}", msg.iter().collect::<String>())
 }
